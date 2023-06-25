@@ -1,0 +1,748 @@
+---
+title: "Чистякова Ксения, R project"
+output:
+  html_document:
+    df_print: paged
+date: "2023-06-25"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
+
+## Анализ конструкции "(не) осилить Х"
+
+### Значения конструкции
+
+ФЭБ: "Словарь русского языка (МАС)"
+http://feb-web.ru/feb/mas/mas-abc/15/ma264527.htm?cmd=0&istext=1
+
+1. Одержать верх в борьбе, схватке, битве; побороть, одолеть || перен. Пересилить, преодолеть, побороть (какое-л. чувство, волнение и т. п.). 
+
+2. Справиться с чем-л. требующим физических усилий, большой затраты труда и т. п. || Разг. Усвоить, постичь что-л., справиться с чем-л., преодолев какие-л. трудности, затруднения. || Разг. Съесть или выпить что-л. в большом количестве. 
+
+Моя разметка:
+
+1.1. победить, одержать верх в борьбе, схватке, битве (прямое значение);
+
+1.2. перен. пересилить, преодолеть, побороть (метафорическое значение);
+
+2.1. справиться с чем-либо требующим физических усилий, большой затраты труда и т. п.;
+
+2.2. справиться с чем-либо требующим больших денежных трат (т.е. купить / оплатить);
+
+3. усвоить, понять, постичь что-либо (когнитивная сфера);
+
+4. съесть или выпить что-либо в большом количестве.
+
+Таким образом, значения с пометкой "перен.", "разг." получили отдельные пункты; значение 2.2. было также вынесено в отдельный пункт, хотя оно не упоминается в словаре.
+
+### Данные
+
+**Источник: НКРЯ**
+
+Поиск (-не, осилить | осиливать) и (не, осилить | осиливать)
+
+Время: настоящее, прошедшее, будущее
+
+Не вошли: инфинитив, деепричастие, причастие
+
+Всего: 909
+
+Конструкция: 695
+
+**Источник: Twitter**
+
+твиты: since = '2023-04-13' until= '2023-04-20' 
+
+поиск: “осилил”, “осилила”, “осилило”, осилили” (прошедшее время) при помощи twint (Python)
+
+поиск: “ниасилил”, “ниасилила”, “ниасилило”, ниасилили” (прошедшее время) + “осилю”, “осилим”, “осилишь”, осилите”, “осилит”, “осилят” (будущее время) при помощи twint-zero (Go)
+
+Всего: 464
+
+Конструкция: 336
+
+**Разметка НКРЯ**: polarity, semi_neg, Meaning (семантическое значение), tense (время глагола), aspect (вид глагола),  center (глагол 'осилить' в той форме, в которой употребляется в предложении),	normalized (нач. форма глагола), Created (дата создания), X (субъект), Y (объект),	Y_POS (POS объекта),	Y_animacy (одушевленность объекта),	Y_case (падеж объекта),	Full context (предложение), Title (автор + произведение),	Sphere (стиль),	Medium (книга / журнал / газета / etc)
+
+Корпус НКРЯ по грамматике размечался при помощи Python (pymorphy), затем разметка проверялась вручную.
+
+**Разметка Twitter**: polarity, semi_neg, Meaning (семантическое значение), tense (время глагола), center (глагол 'осилить' в той форме, в которой употребляется в предложении), Y (объект), username, date, tweet
+
+Оба корпуса вручную размечались по значениям, по объекту, полярности. 
+
+#### Ограничения
+
+* **1 разметчик**
+
+* **Трудные случаи разметки** 
+1) Глагол “осилить” не всегда образует конструкцию, либо ее не всегда можно четко вычленить + может присутствовать эллипсис + встречаются непонятные предложения
+Примеры:
+а) "Вот смотрела их в инете,чёт мне кажется,не осилю,сложно больно"; "Хорошо, я осилю…" – не размечалось как конструкция;
+б) "ссср не сделал ни одного аппарат мрт или узи, а на западе они уже были. в середине 80-х начали завозить, свой так и не осилили" – “не осилили свой” (эллипсис) – конструкция;
+в) "NYR не осилят... Очень интересно посмотреть на Бостон не в регулярке и Эдмонтон" – непонятное предложение. 
+
+2) В коротких предложениях не всегда можно разметить по семантике – недостаток контекста. 
+Примеры:
+"Мой мамонт такое точно осилит"; "Не, ты такое не осилишь"; "А что, стейблкоины отменили?! Или дремучие орки этого не осилят?"
+
+* **Источники**
+
+НКРЯ: книги и публицистика, по большей части.
+
+Twitter: сфера бытового интернет-общения.
+
+### Гипотеза
+
+Употребление конструкции меняется с течением времени. 
+
+а) в целом, конструкция тяготеет к будущему / прошедшему времени, сов. вид (осилить, а не осиливать) и чаще принимает объектом неодушевленный предмет, субъект – одушевленный;
+
+б) конструкция стала чаще употребляться под отрицанием;
+
+в) меняется семантика конструкции –  некоторые значения уходят из дискурса.
+
+Истоки наивной гипотезы: интуитивные наблюдения 
+
+Истоки доработанной гипотезы: чтение данных НКРЯ во время разметки.
+
+### Research design
+
+##### а) описательная статистика, exploratory data analysis;
+
+**Общая формальная гипотеза**
+
+H0: конструкция не тяготеет к определенным значениям присущих ей грамматических категорий.
+
+H1: конструкция чаще употребляется в определенном грамматическом контексте.
+
+##### б) описательная статистика, exploratory data analysis, тест Манна-Уитни, логистическая регрессия, chi-squared test;
+
+**Общая формальная гипотеза**
+
+H0: распределение использования конструкции в негативном и положительном контексте по годам одинаково.
+
+H1: распределения отличаются.
+
+##### в) описательная статистика, exploratory data analysis, prop.test.
+
+**Общая формальная гипотеза**
+
+H0: конструкция равно принимает все семантические значения независимо от корпуса.
+
+H1: в зависимости от корпуса наблюдается сдвиг в сторону определенных семантических значений.
+
+
+### Код
+
+```{r load-data}
+library(ggstatsplot)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+all_data <- read_csv("data - all_data_НКРЯ.csv", show_col_types = FALSE)
+construction <- read_csv("data - construction_НКРЯ.csv", show_col_types = FALSE)
+twitter <- read_csv("data - twitter.csv", show_col_types = FALSE)
+```
+
+Посмотрим на количество данных.
+```{r data-count}
+counts_df <- data.frame(
+Title = c("Все данные НКРЯ", "Конструкция НКРЯ", "Все данные Twitter", "Конструкция Twitter"),
+Counts = c(nrow(all_data), nrow(construction), nrow(twitter), nrow(twitter[!is.na(twitter$Y) & !is.na(twitter$Meaning), ]))
+)
+counts_df
+```
+
+```{r theme}
+custom_theme <-  theme(
+plot.title = element_text(size = 11, hjust = 0.5),
+axis.title.x = element_text(size = 10, face = "bold"),
+axis.title.y = element_text(size = 10, face = "bold"),
+axis.text.x = element_text(size = 10),
+axis.text.y = element_text(size = 10),
+panel.background = element_rect(fill = "white"),
+panel.grid.major = element_line(color = "grey", linetype = "dotted"),
+panel.grid.minor = element_blank(),
+strip.background = element_rect(fill = "white"),
+strip.text = element_text(size = 9, face = "bold"),
+legend.position = "bottom",
+legend.title = element_text(size = 9, face = "bold"),
+legend.text = element_text(size = 10)
+  )
+```
+
+#### Первая гипотеза: конструкция тяготеет к будущему / прошедшему времени, сов. вид (осилить, а не осиливать) и чаще принимает объектом неодушевленный предмет, субъект – одушевленный.
+
+H0: конструкция не тяготеет к определенным значениям присущих ей грамматических категорий.
+
+H1: конструкция чаще употребляется в определенном грамматическом контексте.
+
+Посмотрим на частотность по времени (tense) глагола в конструкции.
+```{r plot-tense}
+construction %>% 
+drop_na(tense) %>%
+mutate(tense = factor(tense, levels = c("past", "futr", "pres"))) %>%
+ggplot(aes(x=tense,fill=tense)) +
+geom_bar()+
+geom_text(aes(label = after_stat(count)), stat = "count", vjust = 1.5, colour = "black") +
+ggtitle("Время, в котором употребляется глагол 'осилить' в конструкции (НКРЯ)") + 
+custom_theme
+```
+
+В НКРЯ наиболее частотно прошедшее и будущее время.
+
+Посмотрим на распределение времени (tense) в зависимости от даты создания.
+```{r plot-tense_time}
+construction %>%
+drop_na(tense) %>%
+mutate(tense = factor(tense, levels = c("past", "futr", "pres"))) %>%
+ggplot(aes(x = tense, fill = tense, y = Created)) +
+geom_violin(draw_quantiles = c(0.25, 0.5, 0.75),
+            linetype = "dashed", scale = "count") +
+geom_violin(fill = "transparent", draw_quantiles = 0.5, scale = "count") +
+stat_summary(fun.y = mean, geom = "point", shape = 20, size = 7, color = "red", fill = "red") +
+stat_summary(fun.y = quantile, fun.args = list(probs = c(0, 0.25, 0.5, 0.75, 1)), 
+             geom = "text", aes(label = round(..y.., 0)), 
+             vjust = -0.7, size = 3, color = "black") +
+ggtitle("Время, в котором употребляется глагол 'осилить' в конструкции (НКРЯ) + Created") + custom_theme
+```
+
+Видим, что сначала были зафиксированы употребления в будущем времени, затем в прошедшем; настоящее время также употреблялось, но крайне редко и до 1997 года.
+
+Посмотрим на вид глагола в конструкции.
+```{r plot-aspect}
+construction%>% 
+drop_na(aspect) %>%
+mutate(aspect = factor(aspect, levels = c("perf", "impf"))) %>%  
+ggplot(aes(x=aspect,fill=aspect)) +
+geom_bar()+ 
+geom_text(aes(label = after_stat(count)), stat = "count", vjust = 1.5, colour = "black") +
+ggtitle("Вид глагола: осиливать vs осилить (НКРЯ)") + 
+custom_theme
+```
+
+Преобладает совершенный вид.
+Таким образом, можно сделать вывод о том, что конструкция тяготеет к будущему / прошедшему времени и совершенному виду. 
+
+Посмотрим на объект.
+В конструкции объектом может быть существительное, местоимение; также конструкция может употребляться с инфинитивом; тег NUMR включает выражения типа "десять минут"; ADJF, например, "такой"; CONJ -- союзное слово ("Что не осилишь, так уж не осилишь").
+```{r plot-Y_POS}
+construction %>%
+drop_na(Y_POS) %>%
+mutate(Y_POS = factor(Y_POS, levels = names(sort(table(Y_POS), decreasing = TRUE)))) %>%
+ggplot(aes(x=Y_POS, fill=Y_POS)) +
+geom_bar() +
+geom_text(aes(label = after_stat(count)), stat = "count", vjust = 1.5, colour = "black") +
+ggtitle("Часть речи объекта (НКРЯ)") +
+custom_theme
+```
+
+Преобладает существительное-объект, также часто существительное заменяется местоимением. 
+Посмотрим на категорию одушевленности для субъекта и объекта в конструкции.
+```{r count-animacy}
+sel_col <- c("X_animacy", "Y_animacy")
+animacy_count <- as.data.frame(apply(construction[sel_col], 2, table))
+```
+
+```{r}
+fig <- animacy_count %>% plot_ly()
+fig <- fig %>% add_trace(x = ~ c("anim", "inan"), y = ~ X_animacy, type = 'bar', name = "X_animacy",
+                         text = ~ X_animacy, textposition = 'auto',
+                         marker = list(color = '#c27ba0',
+                                       line = list(color = '#4c1130', width = 1.5)))
+fig <- fig %>% add_trace(x = ~ c("anim", "inan"), y = ~ Y_animacy, type = 'bar', name = "Y_animacy",
+                         text = ~ Y_animacy, textposition = 'auto',
+                         marker = list(color = '#741b47',
+                                       line = list(color = '#4c1130', width = 1.5))) %>%
+                          layout(title = 'Subject / object animacy', plot_bgcolor = "#e5ecf6",
+                                 xaxis=list(title = 'Animacy'), 
+                                 yaxis = list(title = 'Count'))
+fig
+```
+
+Видим, что субъект чаще одушевлен, а объект не является одушевленным. Посмотрим на violin plot.
+
+```{r}
+Violin_X <- construction %>% 
+drop_na(X_animacy) %>%
+ggplot(aes(x=X_animacy,fill=X_animacy, y = Created)) +
+geom_violin(draw_quantiles = c(0.25, 0.5, 0.75),
+  linetype = "dashed", scale = "count") +
+geom_violin(fill="transparent",draw_quantiles = 0.5, scale = "count") +
+stat_summary(fun.y = mean, geom = "point", shape = 20, size = 7, color = "red", fill = "red") +
+stat_summary(fun.y = quantile, fun.args = list(probs = c(0, 0.25, 0.5, 0.75, 1)), 
+             geom = "text", aes(label = round(..y.., 0)), 
+             vjust = -0.7, size = 3, color = "black") +
+custom_theme
+```
+
+```{r}
+Violin_Y <- construction %>% 
+drop_na(Y_animacy) %>%
+ggplot(aes(x=Y_animacy,fill=Y_animacy, y = Created)) +
+geom_violin(draw_quantiles = c(0.25, 0.5, 0.75),
+  linetype = "dashed", scale = "count") +
+geom_violin(fill="transparent",draw_quantiles = 0.5, scale = "count") +
+stat_summary(fun.y = mean, geom = "point", shape = 20, size = 7, color = "red", fill = "red") +
+stat_summary(fun.y = quantile, fun.args = list(probs = c(0, 0.25, 0.5, 0.75, 1)), 
+             geom = "text", aes(label = round(..y.., 0)), 
+             vjust = -0.7, size = 3, color = "black") +
+custom_theme
+```
+
+```{r}
+library(ggpubr)
+pl <- ggarrange(
+    Violin_X,
+    Violin_Y,
+    legend="none")
+annotate_figure(pl, top = text_grob("Animacy", 
+               color = "black", size = 14))
+```
+
+На основании графиков можно сказать, что конструкция с неодушевленным субъектом / одушевленным объектом стала достаточно рано уходить из употребления. 
+
+Посмотрим, при каких значениях конструкции встречается неодушевленный субъект.
+```{r}
+construction %>%
+  filter(X_animacy == "inan") %>%
+  group_by(Meaning) %>%
+  summarize(count = n())
+```  
+
+Можем отметить значения 1.1, 1.2.
+
+Посмотрим на одушевленный объект.
+```{r}
+construction %>%
+  filter(Y_animacy == "anim") %>%
+  group_by(Meaning) %>%
+  summarize(count = n())
+```  
+
+Здесь также выделяются значения 1.1 и 1.2. 
+
+Итак, описательная статистика подтверждает, что в конструкция "(не) осилить Х" тяготеет к будущему / прошедшему времени, сов. виду и чаще принимает объектом неодушевленный предмет, субъект – одушевленный. Мы можем отклонить нулевую гипотезу о том, что конструкция не тяготеет к определенным значениям присущих ей грамматических категорий.
+
+#### Вторая гипотеза: конструкция стала чаще употребляться под отрицанием.
+
+
+Сначала были собраны данные НКРЯ, затем данные по твиттеру. 
+Данные по твиттеру были собраны так, что в них вошло только прошедшнее и будущее время, вид -- совершенный.
+
+```{r twitter-tense}
+twitter_construction <- twitter[!is.na(twitter$Y) & !is.na(twitter$Meaning), ]
+twitter_construction %>% 
+drop_na(tense) %>%
+mutate(tense = factor(tense, levels = c("past", "fut"))) %>% 
+ggplot(aes(x=tense,fill=tense)) +
+geom_bar()+
+geom_text(aes(label = after_stat(count)), stat = "count", vjust = 1.5, colour = "black") +
+ggtitle("Время, в котором употребляется глагол 'осилить' в конструкции (Twitter)") + 
+custom_theme
+```
+
+Посмотрим на переменную polarity (конструкция не под отрицанием vs под отрицанием) для корпуса на основе НКРЯ.
+
+```{r plot_polarity}
+construction <- within(construction, polarity[polarity == "pos" & !is.na(semi_neg)] <- "semi_neg") 
+construction %>%
+drop_na(polarity) %>%
+mutate(polarity = factor(polarity, levels = c("pos", "neg", "semi_neg"))) %>%   
+ggplot(aes(x = polarity, fill = polarity)) +
+geom_bar() +
+geom_text(aes(label = after_stat(count)), stat = "count", vjust = 1.5, colour = "black") +
+ggtitle("(не) осилить Х (НКРЯ)") +
+custom_theme
+```
+
+Преобладает положительная полярность.
+Также в данных присутствует информация о полу-негативной полярности (при наличии определенного "ограничивающего" обстоятельства).
+
+Посмотрим на распределение polarity по годам для корпуса НКРЯ. Полу-негативную (semi_neg) полярность отнесем к категории negative polarity.
+
+```{r polarity_count}
+pos <- construction %>% 
+   filter(polarity == "pos") 
+neg <- construction %>% 
+   filter(polarity == "neg" | !is.na(construction$semi_neg)) 
+pos$category = "pos"
+neg$category = "neg"
+count_pos <- nrow(pos) 
+count_neg <- nrow(neg) 
+pos_disrt <- pos  %>%
+  group_by(Created, category) %>%
+  summarise(count_per = n(), .groups = 'drop')
+neg_disrt <- neg %>%
+  group_by(Created, category) %>%
+  summarise(count_per = n(), .groups = 'drop')
+```
+
+```{r pol_plot}
+distr<- rbind(pos_disrt, neg_disrt)
+distr %>%
+mutate(category = factor(category, levels = c("pos", "neg"))) %>%
+ggplot(aes(x = Created, y = count_per, fill = category)) +
+geom_bar(stat = "identity", width = 10) +
+facet_wrap(~category) +
+scale_fill_manual(values = c("pos" = "lightgreen", "neg" = "lightblue")) +
+scale_x_continuous(breaks = seq(min(distr$Created),
+                                max(distr$Created), by = 20)) +
+scale_y_continuous(breaks = seq(floor(min(distr$count_per)),
+                                  ceiling(max(distr$count_per)), by = 1)) +
+ggtitle("Распределение polarity по годам (НКРЯ)") +
+custom_theme +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+```
+
+На основании данных графиков сложно сделать выводы. Отнормируем, посмотрим на распределение иначе.
+
+```{r polarity-distribution}
+pos_disrt <- pos  %>%
+  group_by(Created, category) %>%
+  summarise(dist_per = n() / count_pos)
+
+neg_disrt <- neg %>%
+  group_by(Created, category) %>%
+  summarise(dist_per = n() / count_neg)
+```
+
+```{r}
+distr<- rbind(pos_disrt, neg_disrt)
+distr %>%
+mutate(category = factor(category, levels = c("pos", "neg"))) %>%
+ggplot(aes(Created, dist_per))+
+geom_smooth() +
+facet_wrap(~category) +
+ggtitle("Распределение polarity по годам (НКРЯ)") +
+custom_theme
+```
+
+Видим, что в какой-то момент до ~1960-ого года употребление конструкции шло на спад, затем для обеих polarity наблюдается рост употреблений конструкции, но для neg polarity тренд более "резкий".
+
+Посмотрим на violin plot.
+```{r}
+construction <- read_csv("data - construction_НКРЯ.csv", show_col_types = FALSE)
+construction <- within(construction, polarity[polarity == 'pos' & !is.na(construction$semi_neg)] <- 'neg')
+construction %>%
+mutate(polarity = factor(polarity, levels = c("pos", "neg"))) %>%
+ggplot(aes(x = polarity, y = Created)) +
+geom_violin(draw_quantiles = c(0.25, 0.5, 0.75),
+  linetype = "dashed") +
+geom_violin(fill="transparent",draw_quantiles = 0.5) +
+stat_summary(fun.y = mean, geom = "point", shape = 20, size = 7, color = "red", fill = "red") +
+stat_summary(fun.y = quantile, fun.args = list(probs = c(0, 0.25, 0.5, 0.75, 1)), 
+             geom = "text", aes(label = round(..y.., 0)), 
+             vjust = -0.7, size = 3, color = "black") +
+ggtitle("Временные тенденции pos / neg конструкции (НКРЯ)") + 
+custom_theme
+```
+
+Графики показывают, что конструкция под отрицанием появляется позже, чем pos конструкция.
+Часть "скрипки" шире для значения neg на промежутке от 2002 года и далее. Таким образом, речь идет не о том, что neg polarity преобладает над pos, но о ее исторически растущей тенденции "попадать" под отрицание значительно чаще, чем ранеее.
+
+Докажем данную гипотезу, проведя сравнение на одном корпусе (НКРЯ) и на двух корпусах (НКРЯ и Twitter).
+
+**Корпус НКРЯ**
+
+H0: распределение использования конструкции в негативном и положительном контексте по годам одинаково.
+
+H1: распределения отличаются.
+
+Сначала проверим распределение по годам на нормальность. 
+
+H0: выборка взята из нормального распределения.
+
+H1: ненормальное распределение. 
+```{r}
+shapiro.test(construction$Created) 
+```
+
+P-value = 2.2e-16 и меньше, чем 0.05. Отклоняем нулевую гипотезу. Распределение не является нормальным. Соответственно, для проверки первой гипотезы посчитаем непараметрический коэффициент корреляции, в частности, тест Манна-Уитни.
+
+```{r}
+construction <- read_csv("data - construction_НКРЯ.csv", show_col_types = FALSE)
+construction$polarity <- as.factor(construction$polarity)
+wilcox.test(Created ~ polarity, data = construction, paired = FALSE)
+```
+
+P-value = 0.001202 и меньше, чем 0.05. Отклоняем нулевую гипотезу. Распределения положительной и отрицательной полярности различаются.
+
+Отнесем полу-негативную полярность к негативной.
+
+```{r}
+construction <- within(construction, polarity[polarity == 'pos' & !is.na(construction$semi_neg)] <- 'neg')
+construction$polarity <- as.factor(construction$polarity)
+wilcox.test(Created ~ polarity, data = construction, paired = FALSE)
+```
+
+Значение p-value немного изменилось, но все еще меньше 0.05.
+
+Сформулируем гипотезу по-другому и применим логистическую регрессию.
+
+H0: нет статистически значимой связи между годом (Created) и полярностью конструкции (polarity).
+
+H1: существует статистически значимая связь между годом (Created) и полярностью конструкции (polarity).
+
+```{r}
+construction <- read_csv("data - construction_НКРЯ.csv", show_col_types = FALSE)
+construction$polarity <- as.factor(construction$polarity)
+levels(construction$polarity)
+```
+
+```{r}
+logistic_model <- glm(polarity ~ Created, data = construction, family = binomial)
+summary(logistic_model)
+```
+
+Коэффициент для переменной Created = -0.004951 и его p-value = 0.00317. Так как p-значение меньше 0.05, мы можем отклонить нулевую гипотезу и принять альтернативную гипотезу. Таким образом, существует статистически значимая связь между временем создания конструкции и её полярностью. Коэффициент отрицателен, что указывает на то, что с увеличением времени создания конструкции вероятность того, что она будет использоваться в положительном контексте, уменьшается.
+
+Перейдем ко второму корпусу, **Twitter**.
+
+```{r plot-polarity}
+twitter_construction <- within(twitter_construction, polarity[polarity == 'pos' & !is.na(semi_neg)] <- 'semi_neg') 
+twitter_construction %>%
+drop_na(polarity) %>%
+ggplot(aes(x = polarity, fill = polarity)) +
+geom_bar() +
+geom_text(aes(label = after_stat(count)), stat = "count", vjust = 1.5, colour = "black") +
+ggtitle("(не) осилить Х (Twitter)") +
+custom_theme
+```
+
+В конструкциях в Twitter чаще встречается негативная полярность, также увеличилась (по сравнению с НКРЯ) частота полу-негативной полярности.
+
+Сравним **2 корпуса**. 
+
+Н0: переменные "корпус" -- "полярность" независимы.
+
+Н1: между переменными "корпус" -- "полярность" есть связь.
+
+```{r}
+construction <- read_csv("data - construction_НКРЯ.csv", show_col_types = FALSE)
+twitter <- read_csv("data - twitter.csv", show_col_types = FALSE)
+twitter <- twitter[!is.na(twitter$Y) & !is.na(twitter$Meaning), ]
+nk_neg_count <- nrow(construction[construction$polarity=='neg',])
+nk_pos_count <- nrow(construction[construction$polarity=='pos',])
+twitter_neg_count <- nrow(twitter[twitter$polarity=='neg',])
+twitter_pos_count <- nrow(twitter[twitter$polarity=='pos',])
+nk <- c(neg=nk_neg_count, pos=nk_pos_count)
+tw <- c(neg=twitter_neg_count, pos=twitter_pos_count)
+df = as.data.frame(rbind(nk, tw))
+df
+```
+
+```{r}
+chisq.test(df)
+```
+
+P-value = 0.002337, что меньше, чем 0.05. Таким образом, мы можем принять альтернативную гипотезу о том, что между переменными "корпус" -- "полярность" есть связь. 
+На основании chi-squared test и получившейся таблицы значений можно сделать вывод о том, что в современном интернет-дискурсе произошел сдвиг в контексте употребления конструкции: она чаще попадает под отрицание, чем ранее.
+
+Проделаем то же самое, но отнесем semi_neg полярность к негативной полярности.
+```{r}
+construction <- within(construction, polarity[polarity == 'pos' & !is.na(construction$semi_neg)] <- 'neg')
+twitter <- within(twitter, polarity[polarity == 'pos' & 
+!is.na(twitter$semi_neg)] <- 'neg')
+nk_neg_count <- nrow(construction[construction$polarity=='neg',])
+nk_pos_count <- nrow(construction[construction$polarity=='pos',])
+twitter_neg_count <- nrow(twitter[twitter$polarity=='neg',])
+twitter_pos_count <- nrow(twitter[twitter$polarity=='pos',])
+nk <- c(neg=nk_neg_count, pos=nk_pos_count)
+tw <- c(neg=twitter_neg_count, pos=twitter_pos_count)
+df = as.data.frame(rbind(nk, tw))
+df
+```
+```{r}
+chisq.test(df)
+```
+
+P-value стало еще меньше, 1.006e-11. Отнесение полу-негативной полярности к негативной значительно повлияло на результат.
+
+Таким образом, тесты, проведенные и на одном (НКРЯ) корпусе, и на обоих корпусах, позволяют сделать вывод о том, что конструкция имеет тенденцию попадать под отрицание чаще, чем ранее. Особенно это заметно при сравнении двух корпусов.
+
+Посмотрим на слова, которые указывают на полу-негативную полярность:
+```{r semi_neg}
+print("Semi-neg words НКРЯ:")
+head(sort(table(construction$semi_neg), decreasing = TRUE), n=10)
+```
+
+```{r}
+print("Semi-neg words Twitter:")
+head(sort(table(twitter_construction$semi_neg), decreasing = TRUE), n=10)
+```
+
+Можно заметить, что для НКРЯ самым частотным среди semi_neg слов было обстоятельство образа действия "с трудом", тогда как в Twitter чаще встречается "ограничительное" обстоятельство "только". Данное наблюдение может сигнализировать о наличии семантических сдвигов конструкции, которые будут изучены ниже.
+
+#### Третья гипотеза: меняется семантика конструкции –  некоторые значения уходят из дискурса.
+
+H0: конструкция равно принимает все семантические значения независимо от корпуса.
+
+H1: в зависимости от корпуса наблюдается сдвиг в сторону определенных семантических значений.
+
+Посмотрим на семантические значения конструкции.
+
+```{r plot-meaning_time}
+construction <- read_csv("data - construction_НКРЯ.csv", show_col_types = FALSE)
+construction$Meaning <- as.factor(construction$Meaning)
+construction %>%
+ggplot(aes(x = Meaning, fill = Meaning, y = Created)) +
+geom_violin(draw_quantiles = c(0.25, 0.5, 0.75),
+            linetype = "dashed", scale = "count") +
+geom_violin(fill = "transparent", draw_quantiles = 0.5, scale = "count") +
+stat_summary(fun.y = mean, geom = "point", shape = 20, size = 7, color = "red", fill = "red") +
+stat_summary(fun.y = quantile, fun.args = list(probs = c(0, 1)), 
+             geom = "text", aes(label = round(..y.., 0)), 
+             vjust = -0.2, size = 3, color = "black") +
+ggtitle("Распределение значений конструкции + переменная Created (НКРЯ)") + custom_theme
+```
+
+Данный график распределения значений по годам показывает, что наиболее частотны значения 2.1 и 3. Значения 2.2 и 4 встречаются в корпусе крайне редко, а значения 1.1 и 1.2 выходят из употребления, спад начался с ~ 1925-ых годов.
+
+```{r}
+construction <- read_csv("data - construction_НКРЯ.csv", show_col_types = FALSE)
+construction <- within(construction, polarity[polarity == "pos" & !is.na(construction$semi_neg)] <- "semi_neg")
+construction$Meaning <- as.factor(construction$Meaning)
+meaning_count_nk <- construction %>%
+  group_by(Meaning) %>%
+  summarize(
+  sum_pos = sum(polarity == "pos"),
+  sum_neg = sum(polarity == "neg"), 
+  sum_semi = sum(polarity == "semi_neg")
+  )
+```
+
+```{r plot_nk}
+fig_nk <- meaning_count_nk %>%
+  plot_ly(x = ~Meaning, y = ~sum_pos, type = 'bar', name = 'Positive',
+          marker = list(color = '#c27ba0', line = list(color = '#4c1130', width = 1.5)),
+          text = ~sum_pos, textposition = 'outside') %>%
+  add_trace(x = ~Meaning, y = ~sum_neg, type = 'bar', name = 'Negative',
+            marker = list(color = '#7fcdbb', line = list(color = '#2c7fb8', width = 1.5)),
+            text = ~sum_neg, textposition = 'outside') %>%
+  add_trace(x = ~Meaning, y = ~sum_semi, type = 'bar', name = 'Semi',
+            marker = list(color = '#7fcbab', line = list(color = '#4c7eb3', width = 1.5)),
+            text = ~sum_semi, textposition = 'outside') %>%
+  layout(title = 'Meaning + Polarity (НКРЯ)',
+         plot_bgcolor = "#e5ecf6",
+         xaxis = list(title = 'Meaning'),
+         yaxis = list(title = 'Count'),
+         barmode = 'group')
+```
+
+```{r meaning_count}
+twitter <- read_csv("data - twitter.csv", show_col_types = FALSE)
+twitter <- twitter[!is.na(twitter$Y) & !is.na(twitter$Meaning), ]
+twitter_construction <- within(twitter, polarity[polarity == 'pos' & 
+!is.na(twitter$semi_neg)] <- "semi_neg")
+twitter_construction$Meaning <- as.factor(twitter_construction$Meaning)
+meaning_count_tw <- twitter_construction %>%
+group_by(Meaning) %>%
+summarize(
+sum_pos = sum(polarity == "pos"),
+sum_neg = sum(polarity == "neg"), 
+sum_semi = sum(polarity == "semi_neg"))
+```
+
+```{r plot_tw}
+fig_tw <- meaning_count_tw %>%
+  plot_ly(x = ~Meaning, y = ~sum_pos, type = 'bar', name = 'Positive',
+          marker = list(color = '#c27ba0', line = list(color = '#4c1130', width = 1.5)),
+          text = ~sum_pos, textposition = 'outside') %>%
+  add_trace(x = ~Meaning, y = ~sum_neg, type = 'bar', name = 'Negative',
+            marker = list(color = '#7fcdbb', line = list(color = '#2c7fb8', width = 1.5)),
+            text = ~sum_neg, textposition = 'outside') %>%
+  add_trace(x = ~Meaning, y = ~sum_semi, type = 'bar', name = 'Semi',
+            marker = list(color = '#7fcbab', line = list(color = '#4c7eb3', width = 1.5)),
+            text = ~sum_semi, textposition = 'outside') %>%
+  layout(title = 'Meaning + Polarity (Twitter)',
+         plot_bgcolor = "#e5ecf6",
+         xaxis = list(title = 'Meaning'),
+         yaxis = list(title = 'Count'),
+         barmode = 'group')
+```
+
+Посмотрим на частотность значений с разделением на polarity по корпусам.
+
+```{r}
+fig_nk
+```
+
+```{r}
+fig_tw
+```
+
+На основании графиков можно сказать, что, действительно, значения 1.1 и 1.2 практически не встречаются в данных Twitter. 
+
+Вспомним, что:
+
+1.1. победить, одержать верх в борьбе, схватке, битве 
+
+1.2. перен. пересилить, преодолеть, побороть 
+
+Таким образом, "прямое" значение конструкции, предполагающее "силовой" элемент, почти не присутствует в современном интернет-дискурсе, как и переносное, метафорическое значение.
+Вхождений значений 2.2 и 4 достаточно мало. 
+
+Рассмотрим подробнее значение 2.1 и 3.
+
+**Значение 2.1** (справиться с чем-либо требующим физических усилий, большой затраты труда и т. п.)
+
+H0: пропорции конструкции в положительном контексте одинаковы для значения 2.1 в двух корпусах.
+
+H1: пропорции не равны.
+
+Проведем prop.test.
+
+```{r}
+nk_pos_2.1 <- sum(meaning_count_nk[meaning_count_nk$Meaning == "2.1", "sum_pos"])
+nk_total_2.1 <- sum(meaning_count_nk[meaning_count_nk$Meaning == "2.1", c("sum_pos", "sum_neg", "sum_semi")])
+tw_pos_2.1 <- sum(meaning_count_tw[meaning_count_tw$Meaning == "2.1", "sum_pos"])
+tw_total_2.1 <- sum(meaning_count_tw[meaning_count_tw$Meaning == "2.1", c("sum_pos", "sum_neg", "sum_semi")])
+prop.test(c(nk_pos_2.1, tw_pos_2.1), c(nk_total_2.1, tw_total_2.1))
+```
+
+P-value = 0.5487, что не меньше, чем 0.05. Следовательно, мы не можем отклонить нулевую гипотезу. Действительно, нет значимой разницы в употреблении для этого значения.
+
+**Значение 3** (усвоить, понять, постичь что-либо)
+
+H0: нет существенной разницы в доле "pos" polarity конструкции в значении 3 между двумя корпусами (НКРЯ и Twitter).
+
+H1: доля "pos" polarity конструкции в значении 3 больше в корпусе НКРЯ по сравнению с Twitter.
+```{r}
+nk_pos_3 <- sum(meaning_count_nk[meaning_count_nk$Meaning == "3", "sum_pos"])
+nk_total_3 <- sum(meaning_count_nk[meaning_count_nk$Meaning == "3", c("sum_pos", "sum_neg", "sum_semi")])
+tw_pos_3 <- sum(meaning_count_tw[meaning_count_tw$Meaning == "3", "sum_pos"])
+tw_total_3 <- sum(meaning_count_tw[meaning_count_tw$Meaning == "3", c("sum_pos", "sum_neg", "sum_semi")])
+prop.test(c(nk_pos_3, tw_pos_3), c(nk_total_3, tw_total_3), alternative = "greater")
+```
+
+P-value = 0.002223, что меньше, чем 0.05. Доля для НКРЯ ~ 0.49, для Twitter ~ 0.34. Это можно объяснить тем, что конструкция в значении 3 под отрицанием часто употребляется в Twitter как выражение мнения о чем-либо ("не осилить сериал"), так и для оскорблений ("не осилишь прочитать").
+
+Посмотрим на самые частотные объекты по двум корпусам:
+
+```{r}
+print("НКРЯ:")
+head(sort(table(construction$Y), decreasing = TRUE), n=10)
+```
+
+```{r}
+print("Twitter")
+head(sort(table(twitter_construction$Y), decreasing = TRUE), n=10)
+```
+
+Видим, что в качестве объекта в обоих корпусах часто встречается существительное "дорогу", которое используется в выражении "дорогу осилит идущий". 
+
+Итак, действительно, некоторые значения уходят из дискурса (1.1, 1.2). Кроме того, значение 3 стало чаще попадать под отрицание. 
+Отклоняем нулевую гипотезу о том, что конструкция равно принимает все семантические значения независимо от корпуса.
+
+### Вывод
+
+Проведенный анализ конструкции показывает, что все 3 гипотезы о конструкции "(не) осилить Х" подтверждены.
+
+На данный момент конструкция, преимущественно, употребляется в прошедшем / будущем времени, вид -- совершенный. Конструкция принимает объектом неодушевленный объект, субъект -- одушевлен. Также конструкция может употребляться с инфинитивом. 
+
+С течением времени конструкция стала чаще чаще употребляться под отрицанием. В современном интернет-дискурсе она появляется, преимущественно, под отрицанием, что особенно заметно, если учитывать полу-негативную полярность, которая задает именно негативно-ограничивающий контекст.
+
+Также мы подтвердили, что прямое значение конструкции ("осилила зверя"), как и метафорическое ("не осилили его чары"), уходит из употребления. Также есть опеределенный сдвиг для значения 3 (когнитивное значение) -- оно стало употребляться, преимущественно, в негативном, либо полу-негативном контекстах.
